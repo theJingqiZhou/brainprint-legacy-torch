@@ -1,13 +1,12 @@
+# Dataset metadata
 data/*/
 data/*.jsonl
 data/*.docx
 data2/*/
 data2/*.jsonl
-*.pt
-*.pyc
 
-!checkpoints/2026-02-04_12-49/8-0.6549.pt
-!checkpoints/2026-02-04_12-58/13-0.9381.pt
+# Model checkpoints
+checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
