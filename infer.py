@@ -4,11 +4,11 @@ import numpy as np
 import onnxruntime
 import scipy.io as sio
 import torch
-from tqdm import tqdm
 
+from src.runtime_config import CONFIG_DEFAULT, CONFIG_MAT
 from src.utils.filter import filter
 from src.utils.make_identity_database import MakeIdentityDatabase
-from src.utils.preprocess import descale, normlize
+from src.utils.preprocess import normlize
 from src.utils.sliding import sliding_window
 
 
@@ -26,13 +26,12 @@ class Inference:
         self.sample_rate = cfg["data"]["sample_rate"]
 
         # load model
+        providers = ["CPUExecutionProvider"]
+        if torch.cuda.is_available():
+            providers.insert(0, "CUDAExecutionProvider")
         self.onnx_session = onnxruntime.InferenceSession(
             cfg["inference"]["model_path"],
-            providers=[
-                "CUDAExecutionProvider",
-                "CPUExecutionProvider",
-                "CUDAExecutionProvider",
-            ],
+            providers=providers,
         )
 
         identity_feature_map_maker = MakeIdentityDatabase(cfg)
@@ -47,7 +46,7 @@ class Inference:
 
     def match(self, feat):
         results = []
-        for i in tqdm(range(len(self.identity_database)), desc="running match"):
+        for i in range(len(self.identity_database)):
             score = self.compute_distance(feat, self.identity_database[i]["feature"])
             if score < self.conf_thres:
                 continue
@@ -96,13 +95,11 @@ class Inference:
 
         return {"id": identity_id, "count": max_count, "score": score[0]}
 
-    def infer(self, data, prod_mode=False):
-        # if prod_mode:
-        #     data = descale(data)
+    def infer(self, data):
         patchs = sliding_window(data, self.win_size, self.step_size)
 
         results = []
-        for i, input in enumerate(tqdm(patchs)):
+        for input in patchs:
             if self.enable_filter:
                 input = np.concatenate([input, input], axis=1)
                 input = filter(input, self.low_freq, self.high_freq, self.sample_rate)
@@ -119,11 +116,14 @@ class Inference:
 
 
 if __name__ == "__main__":
-    import yaml
+    PROFILE = "mat"  # "default" | "mat"
+    if PROFILE == "default":
+        cfg = CONFIG_DEFAULT
+    elif PROFILE == "mat":
+        cfg = CONFIG_MAT
+    else:
+        raise ValueError(f"Unknown profile: {PROFILE}")
 
-    config_path = "./config/config_mat.yaml"
-    cfg_file = open(config_path, "r")
-    cfg = yaml.safe_load(cfg_file)
     inference = Inference(cfg)
 
     lines = [
@@ -146,6 +146,5 @@ if __name__ == "__main__":
             data = np.load(line)
         elif line.endswith("mat"):
             data = sio.loadmat(line)["data"]
-        # 如果是部署生产环境，prod_mode=True, 若是读取本地文件用于测试，prod_mode=False <default>
-        identity_map = inference.infer(data, prod_mode=False)
+        identity_map = inference.infer(data)
         print(identity_map)

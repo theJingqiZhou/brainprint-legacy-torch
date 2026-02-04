@@ -1,32 +1,32 @@
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-import argparse
-
-import yaml
 
 from src.deploy import Deploy
+from src.runtime_config import CONFIG_DEFAULT, CONFIG_MAT
 from src.test import Test
-from src.trainer import build_trainer
+from src.trainer import BaseTrainer
 
-parser = argparse.ArgumentParser(description="Training")
-parser.add_argument("--config_path", default="./config/config.yaml", type=str)
-args = parser.parse_args()
-
-
-def main():
-    cfg_file = open(os.path.expanduser(args.config_path), "r")
-    cfg = yaml.safe_load(cfg_file)
-    print(cfg)
-    if cfg["runner_type"] == "train_runner":
-        trainer = build_trainer(cfg)
-        trainer.train()
-    if cfg["runner_type"] == "test_runner":
-        test = Test(cfg)
-        test.run()
-    if cfg["runner_type"] == "deploy_runner":
-        deploy = Deploy(cfg)
-        deploy.run()
+PROFILE = "default"  # "default" | "mat"
+RUNNER = "train"  # "train" | "test" | "deploy"
 
 
-main()
+if PROFILE == "default":
+    cfg = CONFIG_DEFAULT
+elif PROFILE == "mat":
+    cfg = CONFIG_MAT
+else:
+    raise ValueError(f"Unknown profile: {PROFILE}")
+
+
+if RUNNER == "train":
+    trainer = BaseTrainer(cfg)
+    trainer.train()
+elif RUNNER == "test":
+    test = Test(cfg)
+    test.run()
+elif RUNNER == "deploy":
+    deploy = Deploy(cfg)
+    deploy.run()
+else:
+    raise ValueError(f"Unknown runner: {RUNNER}")

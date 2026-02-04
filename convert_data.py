@@ -1,23 +1,17 @@
-"""
-convert raw data to train/val dataset
-"""
-
-import argparse
 import json
 import os
-import platform
 import shutil
-import subprocess
 from glob import glob
 
 import numpy as np
-import yaml
-from tqdm import tqdm
 
+from src.runtime_config import CONFIG_DEFAULT
 from src.utils.preprocess import descale
 from src.utils.sliding import sliding_window
 
-system_name = platform.system()
+PROFILE = "default"
+DATA_FILE = ""
+SAVE_FILE = ""
 
 
 class ConvertData:
@@ -25,8 +19,8 @@ class ConvertData:
         self.win_size = cfg["data"]["win_size"]
         self.step_size = cfg["data"]["win_size"]
         self.channel_num = cfg["general"]["input_channel"]
-        self.data_file = cfg["data_file"]
-        self.save_file = cfg["save_file"]
+        self.data_file = DATA_FILE
+        self.save_file = SAVE_FILE
         self.ssvep_cls_num = cfg["data"]["ssvep_cls_num"]
         self.low_freq = cfg["data"]["low_freq"]
         self.high_freq = cfg["data"]["high_freq"]
@@ -87,32 +81,12 @@ class ConvertData:
             print(f"data_type={data_type} not been supported")
         patch_dir = os.path.join(data_dir, "data")
         target_dir = os.path.join(data_dir, "label")
-        if os.path.exists(patch_dir) == False:
-            os.makedirs(patch_dir)
-        else:
-            if system_name == "Linux":
-                command = f"rm -rf {patch_dir}/*"
-                result = subprocess.run(
-                    command, shell=True, capture_output=True, text=True
-                )
-                print(f"remove exist patch file: {result}")
-            else:
-                shutil.rmtree(patch_dir)
-                print(f"remove exist patch dir {patch_dir}")
-                os.makedirs(patch_dir)
-        if os.path.exists(target_dir) == False:
-            os.makedirs(target_dir)
-        else:
-            if system_name == "Linux":
-                command = f"rm -rf {target_dir}/*"
-                result = subprocess.run(
-                    command, shell=True, capture_output=True, text=True
-                )
-                print(f"remove exist target file: {result}")
-            else:
-                shutil.rmtree(target_dir)
-                print(f"remove exist patch dir {target_dir}")
-                os.makedirs(target_dir)
+        if os.path.exists(patch_dir):
+            shutil.rmtree(patch_dir)
+        os.makedirs(patch_dir)
+        if os.path.exists(target_dir):
+            shutil.rmtree(target_dir)
+        os.makedirs(target_dir)
 
         paths = []
         for i in range(len(patchs)):
@@ -130,7 +104,7 @@ class ConvertData:
         with open(self.data_file, "r") as f:
             lines = f.readlines()
             paths = []
-            for line in tqdm(lines, desc="processing"):
+            for line in lines:
                 line = line.strip()  # subject
                 for data_type in ["by", "ssvep"]:  # type
                     data_dir = os.path.join(line, data_type)
@@ -152,16 +126,11 @@ class ConvertData:
                 f.write("\n")
 
 
-parser = argparse.ArgumentParser(description="Training")
-parser.add_argument("--config_path", default="./config/config.yaml", type=str)
-parser.add_argument("--data_file", default="", type=str)
-parser.add_argument("--save_file", default="", type=str)
-args = parser.parse_args()
-
 if __name__ == "__main__":
-    cfg_file = open(os.path.expanduser(args.config_path), "r")
-    cfg = yaml.safe_load(cfg_file)
-    cfg["data_file"] = os.path.expanduser(args.data_file)
-    cfg["save_file"] = os.path.expanduser(args.save_file)
+    cfg = CONFIG_DEFAULT if PROFILE == "default" else None
+    if cfg is None:
+        raise ValueError(f"Unknown profile: {PROFILE}")
+    if not DATA_FILE or not SAVE_FILE:
+        raise ValueError("Set DATA_FILE and SAVE_FILE before running.")
     convert_mapper = ConvertData(cfg)
     convert_mapper.run()

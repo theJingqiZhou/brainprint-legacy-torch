@@ -1,29 +1,15 @@
 import os
-import warnings
 from datetime import datetime
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn.functional as F
+import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-from tensorboardX import SummaryWriter
-from torch.autograd import Variable
-from tqdm import tqdm
 
-from src.evaluators import build_evaluator
-from src.input_pipeline import build_dataloader
-from src.model.criterions import build_criterions
-from src.model.pipeline import build_pipeline
-from src.utils.registry import register_module
-
-warnings.filterwarnings("ignore")
-
-
-@register_module(parent="trainers")
-def base_trainer(cfg):
-    return BaseTrainer(cfg)
+from src.evaluators import Evaluators
+from src.input_pipeline import base_dataset
+from src.pipeline import HydraNet
 
 
 class BaseTrainer:
@@ -39,63 +25,70 @@ class BaseTrainer:
             os.makedirs(self.workspace)
 
         self.max_epoch = self.cfg["general"]["epoch"]
-        self.evaluator = build_evaluator(self.cfg["evaluator"]["type"], self.cfg)
-        self.loss_func = build_criterions(cfg)
-        self.net = build_pipeline(self.cfg)
-
-        print(self.net)
+        self.evaluator = Evaluators()
+        self.net = HydraNet(self.cfg)
 
         if torch.cuda.is_available():
-            self.net = self.net.cuda()
             self.device = torch.device("cuda")
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            self.device = torch.device("mps")
         else:
             self.device = torch.device("cpu")
-        print(f"use device {self.device}")
+        self.net = self.net.to(self.device)
 
-        # Init optimizer
+        criterion = self.cfg["train"]["criterion"]
+        if criterion == "nll":
+            self.loss_func = nn.NLLLoss()
+        elif criterion == "ce":
+            self.loss_func = nn.CrossEntropyLoss()
+        else:
+            raise ValueError(f"Unknown criterion: {criterion}")
+
+        self.criterion = criterion
+
         params = [
             {"params": self.net.parameters(), "lr": self.cfg["train"]["initial_lr"]}
         ]
-        optim_params = self.cfg["optim.params"]
-        self.optimizer = eval("optim.{}".format(self.cfg["train"]["optimizer"]))(
-            params, **optim_params
-        )
-
-        if self.cfg["train"]["lr_strategy"] == "Cosine":
-            self.scheduler = lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=100)
+        optim_params = self.cfg["optim"]
+        optimizer_name = self.cfg["train"]["optimizer"]
+        if optimizer_name == "adam":
+            self.optimizer = optim.Adam(params, **optim_params)
+        elif optimizer_name == "sgd":
+            self.optimizer = optim.SGD(params, **optim_params)
         else:
+            raise ValueError(f"Unknown optimizer: {optimizer_name}")
+
+        lr_strategy = self.cfg["train"]["lr_strategy"]
+        if lr_strategy == "cosine":
+            self.scheduler = lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=100)
+        elif lr_strategy == "none":
             self.scheduler = None
-        # load dataloader
-        self.train_loader = build_dataloader(self.cfg, "train")
-        self.val_loader = build_dataloader(self.cfg, "val")
-        # log visual
-        self.writer = SummaryWriter(self.workspace)
+        else:
+            raise ValueError(f"Unknown lr_strategy: {lr_strategy}")
+
+        self.train_loader = base_dataset(self.cfg, "train")
+        self.val_loader = base_dataset(self.cfg, "val")
 
     def train_epoch(self, epoch):
         self.net.train()
         train_map = []
-        for i, data in enumerate(tqdm(self.train_loader, desc=f"train {epoch}"), 0):
-            # get the inputs
-            inputs, labels = data
-            # inputs&labels load in Variable
-            inputs, labels = Variable(inputs).to(self.device), Variable(labels).to(
-                self.device
-            )  # batch,22,1000
+        for inputs, labels in self.train_loader:
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
             self.optimizer.zero_grad()
             output, _ = self.net(inputs)
-            loss = self.loss_func(output, labels.long())
+            if self.criterion == "nll":
+                loss = self.loss_func(torch.log(output), labels.long())
+            else:
+                loss = self.loss_func(output, labels.long())
             loss.backward()
             self.optimizer.step()
             pred = output.argmax(dim=1, keepdim=True)
             acc = self.evaluator.accuracy(labels.cpu(), pred.cpu())
             train_map.append(acc)
-            self.writer.add_scalar("train/Loss", loss, i)
-            self.writer.add_scalar("train/mAP", acc, i)
 
         if self.scheduler is not None:
             self.scheduler.step()
-            lr_curr = self.scheduler.get_lr()[0]
-            self.writer.add_scalar("train/LR", lr_curr, epoch)
 
         print(
             "Train Epoch: {}\ttrain_Loss: {:.6f} mAP:{:.4f}".format(
@@ -108,26 +101,24 @@ class BaseTrainer:
         test_loss = 0
         test_map = []
         with torch.no_grad():
-            for i, data in enumerate(tqdm(self.val_loader, desc=f"val {epoch}"), 0):
-                inputs, labels = data
-                inputs, labels = Variable(inputs).to(self.device), Variable(labels).to(
-                    self.device
-                )
+            for inputs, labels in self.val_loader:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)
                 labels = labels.long()
                 output, _ = self.net(inputs)
 
-                test_loss += self.loss_func(output, labels.long())
+                if self.criterion == "nll":
+                    test_loss += self.loss_func(torch.log(output), labels)
+                else:
+                    test_loss += self.loss_func(output, labels)
                 pred = output.argmax(dim=1, keepdim=True)
                 acc = self.evaluator.accuracy(labels.cpu(), pred.cpu())
                 test_map.append(acc)
         test_loss /= len(self.val_loader.dataset)
 
-        self.writer.add_scalar("Val/Loss", test_loss, epoch)
-        self.writer.add_scalar("Val/mAP", np.round(np.mean(test_map), 4), epoch)
-
         print(
             "Val set: Average loss: {:.4f}, mAP: {:.4f}".format(
-                test_loss, np.mean(test_map)
+                test_loss.item(), np.mean(test_map)
             )
         )
         return np.round(np.mean(test_map), 4)
@@ -135,7 +126,6 @@ class BaseTrainer:
     def train(
         self,
     ):
-        print("start traing...")
         for epoch in range(1, self.max_epoch + 1):
             self.train_epoch(epoch)
             val_map = self.val(epoch)

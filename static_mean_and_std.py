@@ -1,15 +1,13 @@
 import json
-import os
 
 import numpy as np
-from tqdm import tqdm
 
 
 def run(data_file):
     with open(data_file, "r") as f:
         lines = f.readlines()
         paths = []
-        for line in tqdm(lines, desc="processing"):
+        for line in lines:
             line = line.strip()
             info = json.loads(line)
             patch_path = info["patch_path"]

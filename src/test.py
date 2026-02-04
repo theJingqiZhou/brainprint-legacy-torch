@@ -1,36 +1,44 @@
-import statistics as st
 import time
 
 import numpy as np
 import onnxruntime
 import torch
-from tqdm import tqdm
 
-from src.evaluators import build_evaluator
-from src.input_pipeline import build_dataloader
-from src.model.pipeline import build_pipeline
+from src.evaluators import Evaluators
+from src.input_pipeline import base_dataset
+from src.pipeline import HydraNet
 
 
 class Test:
     def __init__(self, cfg):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+        else:
+            self.device = torch.device("cpu")
         # load data
-        self.test_loader = build_dataloader(cfg, "test")
+        self.test_loader = base_dataset(cfg, "test")
         self.suffix = cfg["test"]["model_path"].split(".")[-1]
 
         if self.suffix == "pt":
-            self.model = build_pipeline(cfg)
-            self.model.load_state_dict(torch.load(cfg["test"]["model_path"]))
+            self.model = HydraNet(cfg)
+            self.model.load_state_dict(
+                torch.load(cfg["test"]["model_path"], map_location=self.device)
+            )
             self.model = self.model.to(self.device)
             self.model.eval()
 
         elif self.suffix == "onnx":
+            providers = ["CPUExecutionProvider"]
+            if torch.cuda.is_available():
+                providers.insert(0, "CUDAExecutionProvider")
             self.onnx_session = onnxruntime.InferenceSession(
                 cfg["test"]["model_path"],
-                providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+                providers=providers,
             )
         # init evaluator
-        self.evaluator = build_evaluator(cfg["evaluator"]["type"], cfg)
+        self.evaluator = Evaluators()
 
     def test_onnx(
         self,
@@ -38,7 +46,7 @@ class Test:
         times = []
         preds = []
         targets = []
-        for i, (data, target) in enumerate(tqdm(self.test_loader)):
+        for data, target in self.test_loader:
             data = data.to(self.device)
             start_time = time.time()
             output, _ = self.onnx_session.run(None, {"input": data.cpu().numpy()})
@@ -70,7 +78,7 @@ class Test:
         targets = []
 
         with torch.no_grad():
-            for i, (data, target) in enumerate(tqdm(self.test_loader)):
+            for data, target in self.test_loader:
                 data, target = data.to(self.device), target.to(self.device)
                 start_time = time.time()
                 output, _ = self.model(data)

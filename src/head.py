@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from src.utils.registry import register_module
-
 
 class ArcNet(nn.Module):
     def __init__(self, feature_num, cls_num):
@@ -25,14 +23,6 @@ class ArcNet(nn.Module):
         return arcsoftmax
 
 
-@register_module(parent="head")
-def classify_head(cfg, input_dim):
-    n_class = cfg["general"]["n_class"]
-    feature_dim = cfg["model"]["feature_dim"]
-    head = ClassifyHead(n_class=n_class, input_dim=input_dim, feature_dim=feature_dim)
-    return head
-
-
 class ClassifyHead(nn.Module):
     def __init__(self, n_class, input_dim, feature_dim):
         super(ClassifyHead, self).__init__()
@@ -49,10 +39,3 @@ class ClassifyHead(nn.Module):
         feature = self.feature_net(x)
         score = self.arc_net(feature)
         return score, feature
-
-
-if __name__ == "__main__":
-    input = torch.rand((1, 2048))
-    model = ClassifyHead(8, 2048, 512)
-    output = model(input)
-    print(output[0].shape, output[1].shape)

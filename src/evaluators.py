@@ -1,16 +1,9 @@
 from sklearn.metrics import (accuracy_score, f1_score, precision_score,
                              recall_score)
 
-from src.utils.registry import register_module
-
-
-@register_module(parent="evaluators")
-def evaluator(config):
-    return Evaluators(config)
-
 
 class Evaluators:
-    def __init__(self, config):
+    def __init__(self):
         pass
 
     def accuracy(self, target, output):

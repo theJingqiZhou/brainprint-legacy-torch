@@ -22,46 +22,39 @@ remove your data in data/ or data2/
 
 ## create train.jsonl
 ```
-python tools/convert_data.py --config_path=../config/config.yaml --data_file=$(your file path) --save_file=$(save path)
+python convert_data.py
 ```
 ![image](https://github.com/CUITCHENSIYU/identity_recognition/assets/52771861/74e9100f-e0eb-4532-b422-a6c91f1d9c54)
 
+Set `PROFILE`, `DATA_FILE`, and `SAVE_FILE` in `convert_data.py` before running.
 
 `Note` if you use mat format data:
 ```
-python tools/convert_data_mat.py --config_path=../config/config_mat.yaml --data_file=$(your file path) --save_file=$(save path)
+python convert_data_mat.py
 ```
+Set `PROFILE`, `DATA_FILE`, and `SAVE_FILE` in `convert_data_mat.py` before running.
 
 # train
-modify config.yaml for user config
-Note: runner_type = train_runner
+modify `src/runtime_config.py` for user config
+set `RUNNER = "train"` in `run.py`
 ```
-python run.py --config_path=config/config.yaml
+python run.py
 ```
-`Note` if you use mat format data:
-```
---config_path=../config/config_mat.yaml
-```
+`Note` if you use mat format data: set `PROFILE = "mat"` in `run.py`
 
 # test
-runner_type = test_runner
+set `RUNNER = "test"` in `run.py`
 ```
-python run.py --config_path=config/config.yaml
+python run.py
 ```
-`Note` if you use mat format data:
-```
---config_path=../config/config_mat.yaml
-```
+`Note` if you use mat format data: set `PROFILE = "mat"` in `run.py`
 # deploy
 suported pt to onnx
-runner_type = deploy_runner
+set `RUNNER = "deploy"` in `run.py`
 ```
-python run.py --config_path=config/config.yaml
+python run.py
 ```
-`Note` if you use mat format data:
-```
---config_path=../config/config_mat.yaml
-```
+`Note` if you use mat format data: set `PROFILE = "mat"` in `run.py`
 # infer demo
 ```
 python infer.py
@@ -76,8 +69,8 @@ return: identity_map：
 | 3 | zqy | - | - |
 | -1 | unknown | 0 | 0 |
 
-if you want add or delete, please update config.yaml
+if you want add or delete, please update `src/runtime_config.py`
 
 ![image](https://github.com/CUITCHENSIYU/identity_recognition/assets/52771861/6aba7815-a4e8-4004-b481-858ac0865719)
 
-`Note` if you use mat format data, please update config_mat.yaml
+`Note` if you use mat format data, please update `src/runtime_config.py`

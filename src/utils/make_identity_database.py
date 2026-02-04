@@ -2,7 +2,6 @@ import json
 
 import numpy as np
 import torch
-from tqdm import tqdm
 
 from .filter import filter
 from .preprocess import normlize
@@ -42,7 +41,7 @@ class MakeIdentityDatabase:
 
     def run(self, onnx_session):
         identity_database = []
-        for line in tqdm(self.lines, desc="running identity database maker"):
+        for line in self.lines:
             line = json.loads(line)
             data_path = line["patch_path"]
             try:

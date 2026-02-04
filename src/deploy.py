@@ -1,9 +1,7 @@
 import onnx
 import torch
 
-from src.model.pipeline import build_pipeline
-
-cuda = True if torch.cuda.is_available() else False
+from src.pipeline import HydraNet
 
 
 class Deploy:
@@ -12,14 +10,22 @@ class Deploy:
         self.model_path = cfg["deploy"]["model_path"]
         self.input_channle = cfg["general"]["input_channel"]
         self.win_size = cfg["data"]["win_size"]
-        self.input_tensor = torch.randn(1, self.input_channle, self.win_size).cuda()
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+        else:
+            self.device = torch.device("cpu")
+        self.input_tensor = torch.randn(1, self.input_channle, self.win_size).to(
+            self.device
+        )
 
     def deploy(
         self,
     ):
-        model = build_pipeline(self.cfg)
-        model.load_state_dict(torch.load(self.model_path))
-        model = model.cuda()
+        model = HydraNet(self.cfg)
+        model.load_state_dict(torch.load(self.model_path, map_location=self.device))
+        model = model.to(self.device)
         model.eval()
         onnx_path = self.model_path.replace(".pt", ".onnx")
         with torch.no_grad():
