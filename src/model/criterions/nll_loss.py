@@ -8,9 +8,11 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
+
 @register_module(parent="criterions")
 def NLLLoss(config):
     return NLL_Loss(config)
+
 
 class NLL_Loss(torch.nn.Module):
     def __init__(self, config):
@@ -18,6 +20,6 @@ class NLL_Loss(torch.nn.Module):
 
         self.loss_weight = None
         self.loss_func = nn.NLLLoss()
+
     def forward(self, output, labels):
         return self.loss_func(torch.log(output), labels)
-

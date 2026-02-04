@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-import torchvision.models as models
 import torch.nn.functional as F
+import torchvision.models as models
 
 from src.model.backbone.layers import Extractor_log_spec
 from src.utils.registry import register_module
@@ -12,15 +12,16 @@ def resnet_50(cfg):
     backbone = ResNet50()
     return backbone
 
+
 class ResNet50(nn.Module):
-    def __init__(self, ):
+    def __init__(
+        self,
+    ):
         super(ResNet50, self).__init__()
-        self.extractor_log_spec = Extractor_log_spec(n_mels=12,
-                                                     sample_rate=1000,
-                                                     n_fft=100,
-                                                     hop_length=10,
-                                                     window_size=100)
-        
+        self.extractor_log_spec = Extractor_log_spec(
+            n_mels=12, sample_rate=1000, n_fft=100, hop_length=10, window_size=100
+        )
+
         resnet = models.resnet50(pretrained=True)
         self.pretrained = nn.Module()
         self.pretrained.layer1 = nn.Sequential(
@@ -37,12 +38,12 @@ class ResNet50(nn.Module):
         x = self.extractor_log_spec(x)
         for i in range(x.shape[1]):
             if i == 0:
-                x_ = x[:,i,:,:]
+                x_ = x[:, i, :, :]
             else:
-                x_ = torch.cat((x_, x[:,i,:,:]), dim=2)
+                x_ = torch.cat((x_, x[:, i, :, :]), dim=2)
         x = torch.unsqueeze(x_, dim=1)
         x = F.interpolate(x, size=(224, 224))
-        x = x.repeat(1,3,1,1)
+        x = x.repeat(1, 3, 1, 1)
 
         layer_1 = self.pretrained.layer1(x)
         layer_2 = self.pretrained.layer2(layer_1)

@@ -1,7 +1,9 @@
+import json
 import os
+
 import numpy as np
 from tqdm import tqdm
-import json
+
 
 def run(data_file):
     with open(data_file, "r") as f:
@@ -13,10 +15,11 @@ def run(data_file):
             patch_path = info["patch_path"]
             data = np.load(patch_path)
             paths.append(data)
-    
+
     paths = np.concatenate(paths, axis=1)
     print(f"min = {np.min(paths, axis=1)}")
     print(f"max = {np.max(paths, axis=1)}")
+
 
 if __name__ == "__main__":
     data_file = "data2/train.jsonl"

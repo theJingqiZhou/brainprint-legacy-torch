@@ -5,20 +5,24 @@ from src.model.backbone import build_backbone
 from src.model.head import build_head
 from src.utils.registry import register_module
 
+
 @register_module(parent="pipeline")
 def hydranet(cfg):
     return HydraNet(cfg)
+
 
 class HydraNet(nn.Module):
     def __init__(self, cfg):
         super(HydraNet, self).__init__()
         self.backbone = build_backbone(cfg)
         self.head = build_head(cfg, self.backbone.feature_dim)
+
     def forward(self, x):
         feat = self.backbone(x)
         out = self.head(feat)
         return out
-    
+
+
 if __name__ == "__main__":
     input = torch.rand((2, 32, 1000))
     cfg = dict()

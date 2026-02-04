@@ -1,8 +1,10 @@
-from src.utils.registry import get_module
 import yaml
-from src.utils.registry import load_modules
+
+from src.utils.registry import get_module, load_modules
+
 
 def build_dataloader(config, split=None):
     load_modules(__file__, "input_pipelines")
-    return get_module("input_pipelines",  config['train']['dataset_type'])(config, split=split)
-                
+    return get_module("input_pipelines", config["train"]["dataset_type"])(
+        config, split=split
+    )

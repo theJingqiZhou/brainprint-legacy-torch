@@ -1,11 +1,14 @@
-import numpy as np
 import json
-from tqdm import tqdm
-import torch
-from .preprocess import normlize
-from .filter import filter
 
-class MakeIdentityDatabase():
+import numpy as np
+import torch
+from tqdm import tqdm
+
+from .filter import filter
+from .preprocess import normlize
+
+
+class MakeIdentityDatabase:
     def __init__(self, cfg):
         self.std = cfg["data"]["std"]
         self.mean = cfg["data"]["mean"]
@@ -22,16 +25,16 @@ class MakeIdentityDatabase():
         with open(self.identity_file, "r") as f:
             lines = f.readlines()
         self.lines = lines[::sample_size]
-    
+
     def to_tensor(self, data):
-        return torch.tensor(data,dtype=torch.float)
-    
+        return torch.tensor(data, dtype=torch.float)
+
     def prepare_input(self, data_path):
         data = np.load(data_path, allow_pickle=True)
         if self.enable_filter:
             data = np.concatenate([data, data], axis=1)
             data = filter(data, self.low_freq, self.high_freq, self.sample_rate)
-            data = data[:, int(data.shape[1]/2):]
+            data = data[:, int(data.shape[1] / 2) :]
         data = normlize(data, self.mean, self.std)
         data = self.to_tensor(data)
         data = torch.unsqueeze(data, 0)
@@ -53,12 +56,14 @@ class MakeIdentityDatabase():
 
             data = self.prepare_input(data_path)
 
-            score, feature = onnx_session.run(None, {'input':data.cpu().numpy()})
+            score, feature = onnx_session.run(None, {"input": data.cpu().numpy()})
             feature = np.squeeze(feature)
-            identity_database.append({
-                "identity_name": identity_name,
-                "identity_id": identity_id,
-                "feature": feature
-            })
-            
+            identity_database.append(
+                {
+                    "identity_name": identity_name,
+                    "identity_id": identity_id,
+                    "feature": feature,
+                }
+            )
+
         return identity_database
