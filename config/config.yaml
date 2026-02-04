@@ -66,12 +66,12 @@ val:
     dataset_path: ./data/val.jsonl
 
 test:
-    model_path: ./checkpoints/2024.04.27/11-0.7806.pt
+    model_path: ./checkpoints/2026-02-04_12-49/8-0.6549.pt
     dataset_path: ./data/val.jsonl
 
 inference:
     dataset_path: ./data/feature_file.jsonl
-    model_path: ./checkpoints/2024-05-25_12-19/7-0.7357.onnx
+    model_path: ./checkpoints/2026-02-04_12-49/8-0.6549.onnx
     sample_size: 3
     feature_file: "./data/feature_file.jsonl"
     valid_identity: ["gjc", "wxr", "yl", "zqy"]
@@ -85,8 +85,4 @@ inference:
     }
 
 deploy:
-    model_path: ./checkpoints/2024-05-25_12-19/7-0.7357.pt
-
-
-
-    
+    model_path: ./checkpoints/2026-02-04_12-49/8-0.6549.pt

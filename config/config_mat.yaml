@@ -68,12 +68,12 @@ val:
     dataset_path: ./data2/val.jsonl
 
 test:
-    model_path: ./checkpoints/2024.04.27/11-0.7806.pt
+    model_path: ./checkpoints/2026-02-04_12-58/13-0.9381.pt
     dataset_path: ./data2/val.jsonl
 
 inference:
     dataset_path: ./data2/feature_file.jsonl
-    model_path: ./checkpoints/2024-07-21_17-40/5-0.9038.onnx
+    model_path: ./checkpoints/2026-02-04_12-58/13-0.9381.onnx
     sample_size: 3
     feature_file: "./data2/feature_file.jsonl"
     valid_identity: ["ltr", "wsm", "yl", "zqy"]
@@ -81,8 +81,4 @@ inference:
     static_num: 30
 
 deploy:
-    model_path: checkpoints/2024-07-21_17-40/5-0.9038.pt
-
-
-
-    
+    model_path: ./checkpoints/2026-02-04_12-58/13-0.9381.pt
