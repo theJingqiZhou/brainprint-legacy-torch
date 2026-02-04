@@ -136,9 +136,9 @@ parser.add_argument("--save_file", default="", type=str)
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    cfg_file = open(args.config_path, "r")
+    cfg_file = open(os.path.expanduser(args.config_path), "r")
     cfg = yaml.safe_load(cfg_file)
-    cfg["data_file"] = args.data_file
-    cfg["save_file"] = args.save_file
+    cfg["data_file"] = os.path.expanduser(args.data_file)
+    cfg["save_file"] = os.path.expanduser(args.save_file)
     convert_mapper = ConvertData(cfg)
     convert_mapper.run()

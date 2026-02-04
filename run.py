@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 def main():
-    cfg_file = open(args.config_path, "r")
+    cfg_file = open(os.path.expanduser(args.config_path), "r")
     cfg = yaml.safe_load(cfg_file)
     print(cfg)
     if cfg["runner_type"] == "train_runner":
