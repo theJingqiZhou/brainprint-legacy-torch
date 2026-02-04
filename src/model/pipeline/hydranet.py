@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-from identity_recognition.model.backbone import build_backbone
-from identity_recognition.model.head import build_head
-from identity_recognition.utils.registry import register_module
+from src.model.backbone import build_backbone
+from src.model.head import build_head
+from src.utils.registry import register_module
 
 @register_module(parent="pipeline")
 def hydranet(cfg):

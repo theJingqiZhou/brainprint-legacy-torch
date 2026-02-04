@@ -2,9 +2,9 @@ import onnxruntime
 import numpy as np
 import statistics as st
 import torch
-from identity_recognition.input_pipeline import build_dataloader
-from identity_recognition.evaluators import build_evaluator
-from identity_recognition.model.pipeline import build_pipeline
+from src.input_pipeline import build_dataloader
+from src.evaluators import build_evaluator
+from src.model.pipeline import build_pipeline
 import time
 from tqdm import tqdm
 

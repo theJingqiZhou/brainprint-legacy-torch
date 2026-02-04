@@ -1,5 +1,5 @@
-from identity_recognition.utils.registry import get_module
-from identity_recognition.utils.registry import load_modules
+from src.utils.registry import get_module
+from src.utils.registry import load_modules
 
 def build_evaluator(task_type, config):
     load_modules(__file__, "evaluators")

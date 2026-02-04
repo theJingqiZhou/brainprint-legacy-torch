@@ -11,11 +11,11 @@ from torch.autograd import Variable
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 
-from identity_recognition.model.pipeline import build_pipeline
-from identity_recognition.model.criterions import build_criterions
-from identity_recognition.input_pipeline import build_dataloader
-from identity_recognition.evaluators import build_evaluator
-from identity_recognition.utils.registry import register_module
+from src.model.pipeline import build_pipeline
+from src.model.criterions import build_criterions
+from src.input_pipeline import build_dataloader
+from src.evaluators import build_evaluator
+from src.utils.registry import register_module
 
 warnings.filterwarnings("ignore")
 

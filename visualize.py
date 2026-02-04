@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from glob import glob
-from identity_recognition.utils.preprocess import descale
-from identity_recognition.utils.filter import filter
+from src.utils.preprocess import descale
+from src.utils.filter import filter
 
 def read_data(data_dir, prefix):
     data_dir = os.path.join(data_dir, prefix)

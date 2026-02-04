@@ -1,11 +1,11 @@
 import os
 os.environ['CUDA_VISIBLE_DEVICES']='0'
 import argparse
-from identity_recognition.trainer import build_trainer
+from src.trainer import build_trainer
 import argparse
 import yaml
-from identity_recognition.test import Test
-from identity_recognition.deploy import Deploy
+from src.test import Test
+from src.deploy import Deploy
 
 parser = argparse.ArgumentParser(description="Training")
 parser.add_argument("--config_path", default="./config/config.yaml", type=str)

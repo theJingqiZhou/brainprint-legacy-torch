@@ -1,6 +1,6 @@
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
-from identity_recognition.utils.registry import register_module
+from src.utils.registry import register_module
 
 @register_module(parent="evaluators")
 def evaluator(config):

@@ -1,6 +1,6 @@
-from identity_recognition.utils.registry import get_module
+from src.utils.registry import get_module
 import yaml
-from identity_recognition.utils.registry import load_modules
+from src.utils.registry import load_modules
 
 def build_dataloader(config, split=None):
     load_modules(__file__, "input_pipelines")

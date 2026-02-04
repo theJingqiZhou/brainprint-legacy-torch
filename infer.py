@@ -5,10 +5,10 @@ from collections import Counter
 from tqdm import tqdm
 import scipy.io as sio
 
-from identity_recognition.utils.make_identity_database import MakeIdentityDatabase
-from identity_recognition.utils.filter import filter
-from identity_recognition.utils.sliding import sliding_window
-from identity_recognition.utils.preprocess import descale, normlize
+from src.utils.make_identity_database import MakeIdentityDatabase
+from src.utils.filter import filter
+from src.utils.sliding import sliding_window
+from src.utils.preprocess import descale, normlize
 
 class Inference():
     def __init__(self, cfg):

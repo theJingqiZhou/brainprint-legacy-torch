@@ -12,7 +12,7 @@ import subprocess
 import shutil
 import platform
 import scipy.io as sio
-from identity_recognition.utils.sliding import sliding_window
+from src.utils.sliding import sliding_window
 
 system_name = platform.system()
 

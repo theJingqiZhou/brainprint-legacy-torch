@@ -4,9 +4,9 @@ import torch
 import numpy as np
 import json
 
-from identity_recognition.utils.registry import register_module
-from identity_recognition.utils.preprocess import normlize
-from identity_recognition.utils.filter import filter
+from src.utils.registry import register_module
+from src.utils.preprocess import normlize
+from src.utils.filter import filter
 
 @register_module(parent="input_pipelines")
 def base_dataset(cfg, split):

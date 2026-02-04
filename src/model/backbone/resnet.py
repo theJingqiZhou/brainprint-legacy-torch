@@ -3,8 +3,8 @@ import torch.nn as nn
 import torchvision.models as models
 import torch.nn.functional as F
 
-from identity_recognition.model.backbone.layers import Extractor_log_spec
-from identity_recognition.utils.registry import register_module
+from src.model.backbone.layers import Extractor_log_spec
+from src.utils.registry import register_module
 
 
 @register_module(parent="backbone")

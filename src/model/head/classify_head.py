@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from identity_recognition.utils.registry import register_module
+from src.utils.registry import register_module
 
 class ArcNet(nn.Module):
     def __init__(self, feature_num, cls_num):

@@ -1,6 +1,6 @@
 import torch
 import onnx
-from identity_recognition.model.pipeline import build_pipeline
+from src.model.pipeline import build_pipeline
 
 cuda = True if torch.cuda.is_available() else False
 

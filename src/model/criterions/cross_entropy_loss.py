@@ -7,7 +7,7 @@ from tkinter.messagebox import NO
 from turtle import forward
 import numpy as np
 
-from identity_recognition.utils.registry import register_module
+from src.utils.registry import register_module
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
