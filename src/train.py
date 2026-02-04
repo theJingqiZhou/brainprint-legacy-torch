@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
+from tqdm import tqdm
 
 from src.data import base_dataset
 from src.metrics import Evaluators
@@ -72,7 +73,11 @@ class BaseTrainer:
     def train_epoch(self, epoch):
         self.net.train()
         train_map = []
-        for inputs, labels in self.train_loader:
+        for inputs, labels in tqdm(
+            self.train_loader,
+            desc=f"Train Epoch {epoch}",
+            leave=False,
+        ):
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
             self.optimizer.zero_grad()
@@ -101,7 +106,11 @@ class BaseTrainer:
         test_loss = 0
         test_map = []
         with torch.no_grad():
-            for inputs, labels in self.val_loader:
+            for inputs, labels in tqdm(
+                self.val_loader,
+                desc=f"Val Epoch {epoch}",
+                leave=False,
+            ):
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
                 labels = labels.long()

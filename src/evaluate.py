@@ -3,6 +3,7 @@ import time
 import numpy as np
 import onnxruntime
 import torch
+from tqdm import tqdm
 
 from src.data import base_dataset
 from src.metrics import Evaluators
@@ -46,7 +47,11 @@ class Test:
         times = []
         preds = []
         targets = []
-        for data, target in self.test_loader:
+        for data, target in tqdm(
+            self.test_loader,
+            desc="Test (onnx)",
+            leave=False,
+        ):
             data = data.to(self.device)
             start_time = time.time()
             output, _ = self.onnx_session.run(None, {"input": data.cpu().numpy()})
@@ -78,7 +83,11 @@ class Test:
         targets = []
 
         with torch.no_grad():
-            for data, target in self.test_loader:
+            for data, target in tqdm(
+                self.test_loader,
+                desc="Test (pth)",
+                leave=False,
+            ):
                 data, target = data.to(self.device), target.to(self.device)
                 start_time = time.time()
                 output, _ = self.model(data)
