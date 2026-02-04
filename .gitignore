@@ -2,6 +2,7 @@ data/*/
 data/*.jsonl
 data/*.docx
 data2/*/
+data2/*.jsonl
 *.pt
 *.pyc
 
