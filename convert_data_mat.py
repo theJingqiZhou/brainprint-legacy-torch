@@ -5,8 +5,8 @@ import shutil
 import numpy as np
 import scipy.io as sio
 
-from src.runtime_config import CONFIG_MAT
-from src.utils.sliding import sliding_window
+from src.config import CONFIG_MAT
+from src.data import sliding_window
 
 PROFILE = "mat"
 DATA_FILE = ""

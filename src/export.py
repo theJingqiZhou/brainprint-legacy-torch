@@ -1,7 +1,7 @@
 import onnx
 import torch
 
-from src.pipeline import HydraNet
+from src.models import HydraNet
 
 
 class Deploy:

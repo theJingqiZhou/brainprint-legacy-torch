@@ -4,8 +4,7 @@ from glob import glob
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.utils.filter import filter
-from src.utils.preprocess import descale
+from src.data import descale, filter
 
 
 def read_data(data_dir, prefix):

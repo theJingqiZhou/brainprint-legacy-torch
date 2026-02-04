@@ -7,9 +7,9 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 
-from src.evaluators import Evaluators
-from src.input_pipeline import base_dataset
-from src.pipeline import HydraNet
+from src.data import base_dataset
+from src.metrics import Evaluators
+from src.models import HydraNet
 
 
 class BaseTrainer:

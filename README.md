@@ -35,7 +35,7 @@ python convert_data_mat.py
 Set `PROFILE`, `DATA_FILE`, and `SAVE_FILE` in `convert_data_mat.py` before running.
 
 # train
-modify `src/runtime_config.py` for user config
+modify `src/config.py` for user config
 set `RUNNER = "train"` in `run.py`
 ```
 python run.py
@@ -69,8 +69,8 @@ return: identity_map：
 | 3 | zqy | - | - |
 | -1 | unknown | 0 | 0 |
 
-if you want add or delete, please update `src/runtime_config.py`
+if you want add or delete, please update `src/config.py`
 
 ![image](https://github.com/CUITCHENSIYU/identity_recognition/assets/52771861/6aba7815-a4e8-4004-b481-858ac0865719)
 
-`Note` if you use mat format data, please update `src/runtime_config.py`
+`Note` if you use mat format data, please update `src/config.py`

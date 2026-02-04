@@ -88,3 +88,57 @@ class ResNet50(nn.Module):
         feat = self.pretrained.pool(layer_4)
         feat = feat.squeeze(-1)
         return feat.squeeze(-1)
+
+
+class ArcNet(nn.Module):
+    def __init__(self, feature_num, cls_num):
+        super(ArcNet, self).__init__()
+        self.w = nn.Parameter(torch.randn((feature_num, cls_num)), requires_grad=True)
+        self.func = nn.Softmax()
+
+    def forward(self, x, s=64, m=0.2):
+        x_norm = F.normalize(x, dim=1)
+        w_norm = F.normalize(self.w, dim=0)
+        cosa = torch.matmul(x_norm, w_norm) / s
+        a = torch.acos(cosa)
+        arcsoftmax = torch.exp(s * torch.cos(a + m)) / (
+            torch.sum(torch.exp(s * cosa), dim=1, keepdim=True)
+            - torch.exp(s * cosa)
+            + torch.exp(s * torch.cos(a + m))
+        )
+
+        return arcsoftmax
+
+
+class ClassifyHead(nn.Module):
+    def __init__(self, n_class, input_dim, feature_dim):
+        super(ClassifyHead, self).__init__()
+
+        self.feature_net = nn.Sequential(
+            nn.BatchNorm1d(input_dim),
+            nn.PReLU(),
+            nn.Linear(input_dim, feature_dim, bias=False),
+        )
+
+        self.arc_net = ArcNet(feature_dim, n_class)
+
+    def forward(self, x):
+        feature = self.feature_net(x)
+        score = self.arc_net(feature)
+        return score, feature
+
+
+class HydraNet(nn.Module):
+    def __init__(self, cfg):
+        super(HydraNet, self).__init__()
+        self.backbone = ResNet50()
+        self.head = ClassifyHead(
+            n_class=cfg["general"]["n_class"],
+            input_dim=self.backbone.feature_dim,
+            feature_dim=cfg["model"]["feature_dim"],
+        )
+
+    def forward(self, x):
+        feat = self.backbone(x)
+        out = self.head(feat)
+        return out

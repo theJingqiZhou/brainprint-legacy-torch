@@ -2,10 +2,10 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-from src.deploy import Deploy
-from src.runtime_config import CONFIG_DEFAULT, CONFIG_MAT
-from src.test import Test
-from src.trainer import BaseTrainer
+from src.config import CONFIG_DEFAULT, CONFIG_MAT
+from src.evaluate import Test
+from src.export import Deploy
+from src.train import BaseTrainer
 
 PROFILE = "default"  # "default" | "mat"
 RUNNER = "train"  # "train" | "test" | "deploy"

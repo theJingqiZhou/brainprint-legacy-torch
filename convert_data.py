@@ -5,9 +5,8 @@ from glob import glob
 
 import numpy as np
 
-from src.runtime_config import CONFIG_DEFAULT
-from src.utils.preprocess import descale
-from src.utils.sliding import sliding_window
+from src.config import CONFIG_DEFAULT
+from src.data import descale, sliding_window
 
 PROFILE = "default"
 DATA_FILE = ""
